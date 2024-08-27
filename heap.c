@@ -15,13 +15,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+
+/* sbrk */
+#include <unistd.h>
+
 #include "heap.h"
 
 
 /**************************             Global Variables             ****************************/
 
-char HeapMemory[HEAP_SIZE];
-char* ProgramBreak = HeapMemory;
+char* HeapMemory;
+char* ProgramBreak;
 FreeBlock * Head = NULL;
 
 
@@ -92,12 +96,7 @@ void PrintList()
                 Prev);
         
         Temp = Temp->NextFreeBlock;
-        
-        if(i == TIMEOUT)
-        {
-            printf("Infinite loop detected in PrintList\n");
-            exit(0);
-        }
+
     }
     
     printf( "================================================================================================================\n");
@@ -284,8 +283,12 @@ void CombineAdjacentFreeBlocks(FreeBlock **deletedBlock)
 
 void Heap_Init()
 {
+
+    HeapMemory = sbrk(0);
+    ProgramBreak = HeapMemory;
+
     /* Increase Program Break */
-    ProgramBreak += STEP_SIZE; 
+    ProgramBreak = sbrk( STEP_SIZE ) + STEP_SIZE; 
 
     FreeBlock* newHead = ( FreeBlock* )HeapMemory;
 
@@ -329,7 +332,7 @@ void * HmmAlloc(size_t Requested_Size)
         /* Case 1: Linked List is empty or no suitable block is found => extend the heap by increasing ProgramBreak */
         if (CurrentBlock == NULL)
         {
-            ProgramBreak += STEP_SIZE;
+            ProgramBreak = sbrk( STEP_SIZE ) + STEP_SIZE;
 
             /* If reached the end of the heap => return NULL*/
             if (ProgramBreak > HeapMemory + HEAP_SIZE) 
@@ -407,6 +410,8 @@ void HmmFree(void *ptr)
 
     /* Combine adjacent Free blocks */
     CombineAdjacentFreeBlocks(&deletedBlock);
+
+   
 
     assert(SearchForCorruption() == PROPPER_LIST);
     return;

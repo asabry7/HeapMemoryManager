@@ -76,6 +76,7 @@ int main() {
     
     random_alloc_free_test(logFile);
 
+    PrintList();
     printf("Fail Percentage: %f%%\n", (100.0 * FailCounter) / (float)MAX_ITERATIONS);    
     fclose(logFile);
     

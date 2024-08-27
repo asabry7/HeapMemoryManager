@@ -17,10 +17,10 @@
 
 #define ON                      1   
 #define OFF                     0   
-#define DEBUG                   OFF
+#define DEBUG                   ON
 
 #define HEAP_SIZE               500 * 1024 * 1024   // 500 MB
-#define STEP_SIZE               136 * 1024          // 135 KB          
+#define STEP_SIZE               1   * 1024 * 1024   //   1 MB          
 
 #define HEAP_IS_FULL            1
 #define CORRUPTED_LIST          2
