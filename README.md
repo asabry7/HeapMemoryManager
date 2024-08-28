@@ -1,50 +1,175 @@
-# Heap Manager V1.0
-This version is just a simulation to the heap memory and its main functions (malloc and free). Heap is simulated by a large static array (saved in the .bss section). The program break is simulated by a variable which grows and shrinks by a configurable constant step.
+# 💾 Heap Memory Manager
 
-# HmmFree
-This function recevies a pointer as an argument and adds it to the "Free blocks linked list". This linked list is composed of blocks illustrated by the following image.
+## 📕 Table of Contents
+
+- [Introduction](#introduction)
+- [HmmAlloc Implementation](#hmmalloc-implementation)
+- [HmmFree Implementation](#hmmfree-implementation)
+- [HmmCalloc Implementation](#hmmcalloc-implementation)
+- [HmmRealloc Implementation](#hmmrealloc-implementation)
+- [Compilation and Running](#compilation-and-running)
+- [Stress Test Results](#stress-test-results)
+
+## 💡 Introduction
+
+The Heap Memory Manager project implements custom dynamic memory allocation functions `HmmAlloc`, `HmmFree`, `HmmCalloc`, and `HmmRealloc`. This project is designed to mimic the behavior of the standard `malloc`, `free`, `calloc`, and `realloc` functions, but with additional control and customization for educational purposes and experimentation.
+
+The implementation represents free blocks by a linked list. Each node "block" has the following struct:
 
 ![alt text](UsedImages/FreeBlockStruct.png)
 
-These Free Blocks are represented by a struct whose members are: 
-- BlockSize: The size of this block in bytes
-- NextFreeBlock: a pointer to the next free block    
-- PreviousFreeBlock: a pointer to the previous free block    
+Where the `BlockSize` is the suze of the block without the meta data, `NextFreeBlock` represents a pointer to the next free node, and `PreviousFreeBlock` represents a pointer to the previous free block.
 
-When this function receives a pointer, it casts it to FreeBlock type (the type of the struct). Then, it addes it to the Free blocks linked list (by assigning the suitable addresses in the next and previous pointers). 
+The implementation is divided into two phases:
 
-After that, it search for adjacent free blocks to combine them into single large block (in order ro prevent fragmentation). 
+1. **Simulated Heap**: In this phase, the heap memory is simulated using a large static array, and the program break is represented by a simple variable. This version is available in the `Phase1` branch.
 
-The following figure illustrate the flow of the function:
+2. **Real Heap**: In this phase, the `sbrk` system call is used to manage the actual program break, allowing for memory allocation in the real heap. This version is the more advanced and realistic implementation.
 
-![alt text](UsedImages/HmmFreeFlowchart.png)
+## 📦 HmmAlloc Implementation
 
-# HmmMalloc
+First of all, if it's the first time `HmmAlloc` is called, the Init function of heap is called. This `Heap_Init` function moves the program break with a constant "configurable" step size. Then, Heap is initialized as a single large block as illustrated in the following figure:
+- Size: all Heap size but discarded from it the metadata size (which is 24 bytes in this case) 
+- Next & Previous pointers: Initialized to NULL.
 
-This function receives the requested size in bytes and returns a void pointer to the allocated block. If the allocation fails, it returns NULL. 
+Finaly, a pointer points to the beginning of the data section (after the meta data) is returned to user.
 
-- First, the function traverse the free blocks linked list for a good candidate (In my project, First Fit approach is used). 
+![alt text](UsedImages/init.png)
 
-- If no candidate is found, it returns NULL. 
+HmmAlloc uses "First Fit" approach in which it traverses the free blocks linked list to find a block that fits the required size. The following illustrated the different scenarios in using HmmAlloc:
 
-- If the good candidate is larger than the requested size, this candidate gets splitted into two blocks, the first block with the requested size, and the second one which contains the remaining size will be returned to the linked list. 
+### HmmAlloc scenarios:
 
-- If the found canditate has exactly the same size as the requested sizem no splitting occures. 
+1. The found block is larger than the required size BUT T\the remaining block is smaller than the minimum valid size:
 
-- After that, a pointer which points to the begining of the block (meaning that it skipps the header part and points directly to the block) is returned by the function. 
+If the remaining block is smaller than the meta data size + the minimum valid size (which is 8 bytes), splitting can't be done here. Thus, the entire block is allocated to user.
 
-the following figure illustrates the operation of the HmmMalloc
+The remove logic itself have multiple scenarios:
 
-![alt text](UsedImages/HmmAllocFlowchart.png)
+ - Only one node in the linked list
 
+ in this case, the head will simply points no NULL.
+ ![alt text](UsedImages/Remove_c1.png)
 
+ - The node to be removes is the first block in the heap:
 
-# Compilation and Running:
-use the following commands to compile and run the program:
+ In this case, the head will simply move to the next free block
 
-```
-make
-./output
-```
+ ![alt text](UsedImages/Remove_c2.png)
 
+ - The node to be removed is the last node in the linked list:
 
+ In this case, the next pointer of the previous block is updated so that it points to NULL.
+
+ ![alt text](UsedImages/Remove_c3.png)
+
+ - The node to be removed is a middle node:
+
+ In this case, the previous node's next pointer and next node's previous pointer will be updated as illustrated in the following figure:
+
+![alt text](UsedImages/Remove_c4.png)
+
+2. The remaining block is larger than or equal the minimum valid size;:
+
+ In this case, the block is safely splitted into two blocks: the first one with the required size from user and second one contains the remaining size of the heap. The following figure illustrates this case. Finaly, the next and previous pointers of the previous and next block will be updated
+
+![alt text](UsedImages/Splitting.png)
+
+## 🗑️ HmmFree Implementation
+
+This function takes pointer as a parameter and then add it to the free blocks linked list in the correct location. This addition process can face multiple scenarios:
+
+- Addition at the begining of the linked list:
+![alt text](UsedImages/addition1.png)
+
+- Addition in the end of the linked list:
+![alt text](UsedImages/addition2.png)
+
+- Addition in the middle of the linked list:
+![alt text](UsedImages/addition3.png)
+
+After the addition of the block, if it's found that the newly added block is adjacent to the previous or the next block, a merge operation is done to prevent fragmentation. The following figure illustrates the two different scenarios:
+
+![alt text](UsedImages/merging.png)
+
+## 🎁 HmmCalloc Implementation
+
+The `HmmCalloc` function calls the `HmmAlloc` function and initialize the returned pointer with zero,
+
+## 🔄 HmmRealloc Implementation
+
+This function takes the old pointer as an argument as well as the new size. 
+- if the new size is zero ; The call is equivalent to `HmmFree`.
+- The `HmmRealloc` calls `HmmAlloc` with the new size.
+- It copies the content of the old pointer to the new pointer
+- It frees the old pointer and returns the new pointer
+
+## ⛏ Compilation and Running
+
+To compile and run the Heap Memory Manager, follow these steps:
+
+1. **Clone the repository**:
+    ```bash
+    git clone https://github.com/yourusername/heap-memory-manager.git
+    ```
+
+2. **Checkout to the desired branch**:
+   - For the simulated heap version:
+     ```bash
+     git checkout Phase1
+     ```
+   - For the real heap version:
+     ```bash
+     git checkout Phase2
+     ```
+
+3. **Compile the program**:
+    ```bash
+    make
+    ```
+
+4. **Run the program**:
+    ```bash
+    ./output
+    ```
+
+</br>
+
+### To compile and run the Heap Memory Manager as a dynamic library, follow these steps:
+
+1. **Compile all c files in ./DMA directory to object files**
+    ```bash
+    cd ./DMA
+    gcc -c -fPIC *.c
+    ```
+
+2. **Create the shared object**
+    ```bash
+    gcc -shared -o libmydma.so *.o
+    ```
+
+3. **If you want to use it in a main.c file:**
+
+    - Include it in your file:
+
+    ```c
+    #include <mydma.h>
+    ```
+    - Compile the main.c file:
+
+    ```bash
+    gcc -o main main.c -I ./DMA/ -L ./DMA/ -lmydma
+    ```
+
+    - Run the main.c file:
+
+    ```bash
+    LD_LIBRARY_PATH=./DMA ./main
+    ```
+
+4. **If you want to run it applications like vim, bash or ls:**
+    - Set the preload variable to ./DMA/libmydma.so and run the program in the same line:
+    
+    ```bash
+    LD_PRELOAD=./DMA/mylib.so vim
+    ```
