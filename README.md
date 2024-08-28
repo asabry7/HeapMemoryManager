@@ -15,6 +15,7 @@
 The Heap Memory Manager project implements custom dynamic memory allocation functions `HmmAlloc`, `HmmFree`, `HmmCalloc`, and `HmmRealloc`. This project is designed to mimic the behavior of the standard `malloc`, `free`, `calloc`, and `realloc` functions, but with additional control and customization for educational purposes and experimentation.
 
 The implementation represents free blocks by a linked list. Each node "block" has the following struct:
+
 ![alt text](UsedImages/FreeBlockStruct.png)
 
 Where the `BlockSize` is the suze of the block without the meta data, `NextFreeBlock` represents a pointer to the next free node, and `PreviousFreeBlock` represents a pointer to the previous free block.
@@ -172,14 +173,3 @@ To compile and run the Heap Memory Manager, follow these steps:
     ```bash
     LD_PRELOAD=./DMA/mylib.so vim
     ```
-## 📈 Stress Test Results
-
-The stress test was conducted to evaluate the robustness and efficiency of the Heap Memory Manager under heavy memory allocation and deallocation operations. Below are the results:
-
-- **Test Environment**: [Details about the environment]
-- **Number of Iterations**: [Number]
-- **Memory Allocated**: [Total memory allocated]
-- **Memory Deallocated**: [Total memory deallocated]
-- **Errors Detected**: [Any errors or issues observed]
-
-The results indicate that the Heap Memory Manager performs [summary of performance, e.g., "efficiently with no memory leaks detected"]. These results validate the stability and correctness of the implementation.
