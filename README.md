@@ -56,7 +56,7 @@ The remove logic itself have multiple scenarios:
 
  ![alt text](UsedImages/Remove_c2.png)
 
- - The node to be removed is the last node in the linked list:
+ - The node to be removed is the last node in th e linked list:
 
  In this case, the next pointer of the previous block is updated so that it points to NULL.
 
@@ -109,7 +109,7 @@ To compile and run the Heap Memory Manager, follow these steps:
 
 1. **Clone the repository**:
     ```bash
-    git clone https://github.com/yourusername/heap-memory-manager.git
+    git clone https://github.com/asabry7/HeapMemoryManager.git
     ```
 
 2. **Checkout to the desired branch**:
