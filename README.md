@@ -109,7 +109,7 @@ To compile and run the Heap Memory Manager, follow these steps:
 
 1. **Clone the repository**:
     ```bash
-    git clone https://github.com/yourusername/heap-memory-manager.git
+    git clone https://github.com/asabry7/HeapMemoryManager.git
     ```
 
 2. **Checkout to the desired branch**:
